@@ -63,7 +63,7 @@
     frame.can_id = (MSG_VEL_CMD << 5) | dev_id;
     frame.can_dlc = 8;
   
-    *(int32_t *)&frame.data[dev_id%2] = vel;
+    *(int32_t *)&frame.data[(dev_id%2)*4] = vel;
     
     dev.send(frame.can_id, frame.can_dlc, frame.data);
   }
@@ -88,7 +88,7 @@
     frame.can_id = (MSG_POS_CMD << 5) | dev_id;
     frame.can_dlc = 8;
   
-    *(int32_t *)&frame.data[dev_id%2] = pos;
+    *(int32_t *)&frame.data[(dev_id%2)*4] = pos;
     
     dev.send(frame.can_id, frame.can_dlc, frame.data);
   }
