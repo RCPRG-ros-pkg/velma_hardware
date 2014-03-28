@@ -101,9 +101,11 @@ public:
 				//mc.setPosition(3, jnt_pos_cmd_(3));
 				// Send data from JointPositionCommand port #1 and #2 to drives #2 and #3 (group #1)
 				mc.setPosition2(1, jnt_pos_cmd_(1), jnt_pos_cmd_(2));
+				// Send data from JointPositionCommand port #0 to drive #1
+				mc.setPosition(1, jnt_pos_cmd_(0));
 			}
 
-			if(pos_fs == RTT::NewData){
+			if(trq_fs == RTT::NewData){
 				// New torque data: make a new torso torque and position command
 				int16_t trq0 = -((jnt_trq_cmd_(0)/GEAR0)/0.105) * 1.2 * 1000;
 				if(trq0 < 0.0) {
@@ -113,8 +115,6 @@ public:
 				}
 				// Send data computed from JointTorqueCommand port #0 to drive #0
 				mc.setCurrent(0, trq0);
-				// Send data from JointPositionCommand port #0 to drive #1
-				mc.setPosition(1, jnt_pos_cmd_(0));
 			}
 
 			mc.getPosition4(0, pos0, pos1, pos2, pos3);
