@@ -95,14 +95,19 @@ public:
 			
 			
 			if(pos_fs == RTT::NewData){
+				int32_t jnt_pos[3];
+				
+				jnt_pos[0] = -((jnt_pos_cmd_(0) + M_PI/2.0)/(M_PI * 2)) * (ENC1 * 4.0 * GEAR1) + OFFSET1;
+				jnt_pos[1] = -(jnt_pos_cmd_(1)/(M_PI * 2)) * (ENC2 * 4.0 * GEAR2) + OFFSET2;
+				jnt_pos[2] = -(jnt_pos_cmd_(2)/(M_PI * 2)) * (ENC3 * 4.0 * GEAR3) + OFFSET3;
+				
 				// New position data: make a new head position command
 				//std::cout<<"jnt_pos_cmd_ "<<jnt_pos_cmd_(0)<<" "<<jnt_pos_cmd_(1)<<" "<<jnt_pos_cmd_(2)<< std::endl;
-				//mc.setPosition(2, jnt_pos_cmd_(2));
-				//mc.setPosition(3, jnt_pos_cmd_(3));
+				
 				// Send data from JointPositionCommand port #1 and #2 to drives #2 and #3 (group #1)
-				mc.setPosition2(1, jnt_pos_cmd_(1), jnt_pos_cmd_(2));
+				mc.setPosition2(1, jnt_pos[1], jnt_pos[2]);
 				// Send data from JointPositionCommand port #0 to drive #1
-				mc.setPosition(1, jnt_pos_cmd_(0));
+				mc.setPosition(1, jnt_pos[0]);
 			}
 
 			if(trq_fs == RTT::NewData){
