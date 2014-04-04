@@ -18,7 +18,7 @@
 
 #define GEAR0 158.0
 #define GEAR1 1.0
-#define GEAR2 50.0
+#define GEAR2 113.0
 #define GEAR3 50.0
 
 #define ENC0 5000.0
@@ -95,19 +95,19 @@ public:
 			
 			
 			if(pos_fs == RTT::NewData){
-				int32_t jnt_pos[3];
+				int32_t motor_pos[3];
 				
-				jnt_pos[0] = -((jnt_pos_cmd_(0) + M_PI/2.0)/(M_PI * 2)) * (ENC1 * 4.0 * GEAR1) + OFFSET1;
-				jnt_pos[1] = -(jnt_pos_cmd_(1)/(M_PI * 2)) * (ENC2 * 4.0 * GEAR2) + OFFSET2;
-				jnt_pos[2] = -(jnt_pos_cmd_(2)/(M_PI * 2)) * (ENC3 * 4.0 * GEAR3) + OFFSET3;
+				motor_pos[0] = -((jnt_pos_cmd_(0) + M_PI/2.0)/(M_PI * 2)) * (ENC1 * 4.0 * GEAR1) + OFFSET1;
+				motor_pos[1] = -(jnt_pos_cmd_(1)/(M_PI * 2)) * (ENC2 * 4.0 * GEAR2) + OFFSET2;
+				motor_pos[2] = (jnt_pos_cmd_(2)/(M_PI * 2)) * (ENC3 * 4.0 * GEAR3) + OFFSET3;
 				
 				// New position data: make a new head position command
 				//std::cout<<"jnt_pos_cmd_ "<<jnt_pos_cmd_(0)<<" "<<jnt_pos_cmd_(1)<<" "<<jnt_pos_cmd_(2)<< std::endl;
 				
 				// Send data from JointPositionCommand port #1 and #2 to drives #2 and #3 (group #1)
-				mc.setPosition2(1, jnt_pos[1], jnt_pos[2]);
+				mc.setPosition2(1, motor_pos[1], motor_pos[2]);
 				// Send data from JointPositionCommand port #0 to drive #1
-				mc.setPosition(1, jnt_pos[0]);
+				mc.setPosition(1, motor_pos[0]);
 			}
 
 			if(trq_fs == RTT::NewData){
@@ -127,7 +127,7 @@ public:
 			jnt_pos_[0] = -((double)(pos0 - OFFSET0)/(ENC0 * 4.0 * GEAR0) * M_PI * 2);
 			jnt_pos_[1] = -((double)(pos1 - OFFSET1)/(ENC1 * 4.0 * GEAR1) * M_PI * 2) - M_PI/2.0;
 			jnt_pos_[2] = -((double)(pos2 - OFFSET2)/(ENC2 * 4.0 * GEAR2) * M_PI * 2);
-			jnt_pos_[3] = -((double)(pos3 - OFFSET3)/(ENC3 * 4.0 * GEAR3) * M_PI * 2);
+			jnt_pos_[3] = ((double)(pos3 - OFFSET3)/(ENC3 * 4.0 * GEAR3) * M_PI * 2);
 
 			jnt_vel_[0] = 0;
 			jnt_vel_[1] = 0;
