@@ -31,6 +31,8 @@
 #define MAX_VEL2 50000
 #define MAX_VEL3 20000
 
+#define TORSO_DEAD
+
 class VelmaTorso : public RTT::TaskContext {
 public:
 	VelmaTorso(const std::string & name) : TaskContext(name), mc("rtcan0") {
@@ -60,6 +62,10 @@ public:
 	}
 
 	bool startHook() {
+#ifdef TORSO_DEAD
+    drivesSynchronized = true;
+    return true;
+#endif // TORSO_DEAD
 		// Just to be sure
 		drivesSynchronized = false;
 
@@ -83,6 +89,22 @@ public:
 		uint32_t status0, status1, status2, status3;
 		uint8_t mode0, mode1, mode2, mode3;
 		RTT::FlowStatus pos_fs, trq_fs;
+		
+#ifdef TORSO_DEAD
+    jnt_pos_[0] = 0;
+		jnt_pos_[1] = - M_PI/2.0;
+		jnt_pos_[2] = 0;
+		jnt_pos_[3] = 0;
+
+		jnt_vel_[0] = 0;
+		jnt_vel_[1] = 0;
+		jnt_vel_[2] = 0;
+		jnt_vel_[3] = 0;
+
+		port_JointPosition.write(jnt_pos_);
+		port_JointVelocity.write(jnt_vel_);
+    return;
+#endif // TORSO_DEAD
 
 		mc.getStatus4(0, status0, mode0, status1, mode1, status2, mode2, status3, mode3);
 
