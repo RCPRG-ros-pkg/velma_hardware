@@ -44,6 +44,11 @@ public:
 
 		this->ports()->addPort("JointVelocity", port_JointVelocity).doc("");
 		this->ports()->addPort("JointPosition", port_JointPosition).doc("");
+		
+		this->ports()->addPort("MotorPosition", port_MotorPosition).doc("");
+		this->ports()->addPort("MotorVelocity", port_MotorVelocity).doc("");
+		
+		this->ports()->addPort("MotorCurrentCommand", port_MotorCurrentCommand).doc("");
 	}
 
 	~VelmaTorso() {
@@ -54,7 +59,6 @@ public:
 		jnt_vel_.resize(TORSO_MNJ);
 		jnt_pos_cmd_.resize(POS_CTRL_MNJ);
 		jnt_trq_cmd_.resize(TRQ_CTRL_MNJ);
-
 		port_JointPosition.setDataSample(jnt_pos_);
 		port_JointVelocity.setDataSample(jnt_vel_);
 
@@ -91,12 +95,31 @@ public:
 		RTT::FlowStatus pos_fs, trq_fs;
 		
 #ifdef TORSO_DEAD
-    jnt_pos_[0] = 0;
+		if (port_JointTorqueCommand.read(jnt_trq_cmd_) == RTT::NewData) {
+		  mot_trq_cmd_ = ((jnt_trq_cmd_(0)/GEAR0)/0.105) * 1.2;
+		  if(mot_trq_cmd_ < 0.0) {
+		    mot_trq_cmd_ -= 0.5;
+		  } else {
+		    mot_trq_cmd_ += 0.5;
+		  }
+		  
+		  port_MotorCurrentCommand.write(mot_trq_cmd_);
+		}
+
+		if (port_MotorPosition.read(mot_pos_) == RTT::NewData) {
+		  jnt_pos_[0] = ((double)(mot_pos_ - OFFSET0)/(ENC0 * 4.0 * GEAR0) * M_PI * 2);
+		}
+
+		if (port_MotorVelocity.read(mot_vel_) == RTT::NewData) {
+		  jnt_vel_[0] = ((double)(mot_vel_ - OFFSET0)/(ENC0 * 4.0 * GEAR0) * M_PI * 2);
+		}
+
+    		//jnt_pos_[0] = 0;
 		jnt_pos_[1] = - M_PI/2.0;
 		jnt_pos_[2] = 0;
 		jnt_pos_[3] = 0;
 
-		jnt_vel_[0] = 0;
+		//jnt_vel_[0] = 0;
 		jnt_vel_[1] = 0;
 		jnt_vel_[2] = 0;
 		jnt_vel_[3] = 0;
@@ -104,7 +127,7 @@ public:
 		port_JointPosition.write(jnt_pos_);
 		port_JointVelocity.write(jnt_vel_);
     return;
-#endif // TORSO_DEAD
+#else // TORSO_DEAD
 
 		mc.getStatus4(0, status0, mode0, status1, mode1, status2, mode2, status3, mode3);
 
@@ -191,6 +214,7 @@ public:
 		} else {
 			std::cout << "Some axis un-synchronized?" << std::endl;
 		}
+#endif
 	}
 
 private:
@@ -202,6 +226,11 @@ private:
 	RTT::OutputPort<Eigen::VectorXd > port_JointVelocity;
 	RTT::OutputPort<Eigen::VectorXd > port_JointPosition;
 
+	RTT::InputPort<double > port_MotorPosition;
+	RTT::InputPort<double > port_MotorVelocity;
+
+	RTT::OutputPort<double > port_MotorCurrentCommand;
+
 	std::string prop_device;
 
 	Eigen::VectorXd jnt_pos_;
@@ -209,6 +238,11 @@ private:
 
 	Eigen::VectorXd jnt_pos_cmd_;
 	Eigen::VectorXd jnt_trq_cmd_;
+
+	double mot_pos_;
+	double mot_vel_;
+	
+	double mot_trq_cmd_;
 
 	bool drivesSynchronized;
 	int loopCnt;
