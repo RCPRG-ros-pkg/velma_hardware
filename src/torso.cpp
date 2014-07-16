@@ -31,6 +31,9 @@
 #define MAX_VEL2 50000
 #define MAX_VEL3 20000
 
+#define FV 0.0022
+#define FC 0.0596
+
 #define TORSO_DEAD
 
 class VelmaTorso : public RTT::TaskContext {
@@ -95,24 +98,32 @@ public:
 		RTT::FlowStatus pos_fs, trq_fs;
 		
 #ifdef TORSO_DEAD
-		if (port_JointTorqueCommand.read(jnt_trq_cmd_) == RTT::NewData) {
-		  mot_trq_cmd_ = ((jnt_trq_cmd_(0)/GEAR0)/0.105) * 1.2;
-		  if(mot_trq_cmd_ < 0.0) {
-		    mot_trq_cmd_ -= 0.5;
-		  } else {
-		    mot_trq_cmd_ += 0.5;
-		  }
-		  
-		  port_MotorCurrentCommand.write(mot_trq_cmd_);
-		}
 
 		if (port_MotorPosition.read(mot_pos_) == RTT::NewData) {
 		  jnt_pos_[0] = ((double)(mot_pos_ - OFFSET0)/(ENC0 * 4.0 * GEAR0) * M_PI * 2);
 		}
 
 		if (port_MotorVelocity.read(mot_vel_) == RTT::NewData) {
-		  jnt_vel_[0] = ((double)(mot_vel_ - OFFSET0)/(ENC0 * 4.0 * GEAR0) * M_PI * 2);
+		  jnt_vel_[0] = ((double)(mot_vel_)/(ENC0 * 4.0 * GEAR0) * M_PI * 2);
 		}
+
+		if (port_JointTorqueCommand.read(jnt_trq_cmd_) == RTT::NewData) {
+		  mot_trq_cmd_ = (jnt_trq_cmd_(0)/GEAR0);
+		}
+
+    double vsign = 0.0;
+    
+    if (mot_vel_ > 100) {
+      vsign = 1.0;
+    } else if (mot_vel_ < -100) {
+      vsign = -1.0;
+    }
+
+    double friction_torque = 0.9 * (((double)(mot_vel_)/(ENC0 * 4.0) * M_PI * 2) * FV + vsign * FC);
+
+	  double mot_current_command = (mot_trq_cmd_ + friction_torque)/0.105;
+		  
+		port_MotorCurrentCommand.write(mot_current_command);
 
     		//jnt_pos_[0] = 0;
 		jnt_pos_[1] = - M_PI/2.0;
