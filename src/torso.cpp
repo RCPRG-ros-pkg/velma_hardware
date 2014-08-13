@@ -38,7 +38,7 @@
 
 class VelmaTorso : public RTT::TaskContext {
 public:
-	VelmaTorso(const std::string & name) : TaskContext(name), mc("rtcan0") {
+	VelmaTorso(const std::string & name) : TaskContext(name), mc("rtcan0"), mot_trq_cmd_(0) {
 		prop_device = "rtcan0";
 		this->addProperty("device", prop_device);
 
@@ -112,14 +112,20 @@ public:
 		}
 
     double vsign = 0.0;
+    double tsign = 0.0;
     
     if (mot_vel_ > 100) {
       vsign = 1.0;
     } else if (mot_vel_ < -100) {
       vsign = -1.0;
+    } else if (mot_trq_cmd_ > 0.1) {
+      tsign = 1.0;
+    } else if (mot_trq_cmd_ < -0.1) {
+      tsign = -1.0;
     }
+    
 
-    double friction_torque = 0.9 * (((double)(mot_vel_)/(ENC0 * 4.0) * M_PI * 2) * FV + vsign * FC);
+    double friction_torque = 0.9 * (((double)(mot_vel_)/(ENC0 * 4.0) * M_PI * 2) * FV + vsign * FC) + tsign * FC;
 
 	  double mot_current_command = (mot_trq_cmd_ + friction_torque)/0.105;
 		  
