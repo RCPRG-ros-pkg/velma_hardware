@@ -4,7 +4,7 @@ project(velma_hardware)
 ### ROS Dependencies ###
 # Find the RTT-ROS package (this transitively includes the Orocos CMake macros)
 find_package(catkin REQUIRED COMPONENTS
-  rtt_ros
+  rtt_ros cmake_modules
   # ADDITIONAL ROS PACKAGES
   )
 
