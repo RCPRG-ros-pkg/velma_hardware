@@ -18,9 +18,10 @@ find_package(Xenomai REQUIRED)
 include_directories(${catkin_INCLUDE_DIRS} ${USE_OROCOS_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 
 ### Orocos Targets ###
-
+if(${OROCOS_TARGET} STREQUAL "xenomai" )
 orocos_component(torso_controller src/torso.cpp src/MotorController.cpp src/CANDev.cpp)
 target_link_libraries(torso_controller ${catkin_LIBRARIES} ${USE_OROCOS_LIBRARIES} ${Xenomai_RTDM_LIBRARIES})
+endif()
 
 ### Orocos Package Exports and Install Targets ###
 
